@@ -13,22 +13,34 @@ const save = (key, value) => {
   }
 };
 
+const load = key => {
+  try {
+    const serializedState = localStorage.getItem(key);
+    return serializedState === null ? undefined : JSON.parse(serializedState);
+  } catch (error) {
+    console.error('Get state error: ', error.message);
+  }
+};
+
+const remove = key => {
+  try {
+    localStorage.removeItem(key);
+  } catch (error) {
+    console.error('Get state error: ', error.message);
+  }
+};
+
 initPage();
 
 const onFormInput = event => {
   const { name, value } = event.target;
   try {
-    let saveData = localStorage.getItem(LOCALE_STORAGE_KEY);
-
-    if (saveData) {
-      saveData = JSON.parse(saveData);
-    } else {
-      saveData = {};
-    }
+    let saveData = load(LOCALE_STORAGE_KEY);
+    saveData = saveData ? saveData : {};
 
     saveData[name] = value;
-    const stringifyData = JSON.stringify(saveData);
-    localStorage.setItem(LOCALE_STORAGE_KEY, stringifyData);
+
+    save(LOCALE_STORAGE_KEY, saveData);
   } catch (error) {
     console.log(error);
   }
@@ -38,19 +50,15 @@ const throttledOnFormInput = throttle(onFormInput, 500);
 formRef.addEventListener('input', throttledOnFormInput);
 
 function initPage() {
-  const saveData = localStorage.getItem(LOCALE_STORAGE_KEY);
+  const saveData = load(LOCALE_STORAGE_KEY);
+
   if (!saveData) {
     return;
   }
 
-  try {
-    const parseData = JSON.parse(saveData);
-    Object.entries(parseData).forEach(([name, value]) => {
-      formRef.elements[name].value = value;
-    });
-  } catch (error) {
-    console.log(error);
-  }
+  Object.entries(saveData).forEach(([name, value]) => {
+    formRef.elements[name].value = value;
+  });
 }
 
 const handleSubmit = event => {
@@ -62,7 +70,7 @@ const handleSubmit = event => {
 
   console.log({ email: email.value, message: message.value });
   event.currentTarget.reset();
-  localStorage.removeItem(LOCALE_STORAGE_KEY);
+  remove(LOCALE_STORAGE_KEY);
 };
 
 formRef.addEventListener('submit', handleSubmit);

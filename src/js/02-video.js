@@ -13,22 +13,13 @@ const onPlay = function (data) {
 player.on('timeupdate', throttle(onPlay, 1000));
 
 function resumePlayback() {
-  if (JSON.parse(localStorage.getItem(TIME_KEY)) === null) {
+  const savedTime = localStorage.getItem(TIME_KEY);
+
+  if (JSON.parse(savedTime) === null) {
     return;
   }
-  const paused = JSON.parse(localStorage.getItem(TIME_KEY))['seconds'];
-  if (paused) {
-    player
-      .setCurrentTime(paused)
-      .then(function (seconds) {})
-      .catch(function (error) {
-        switch (error.name) {
-          case 'Error':
-            break;
-          default:
-            break;
-        }
-      });
-  }
+  const paused = JSON.parse(savedTime)['seconds'];
+
+  paused = player.setCurrentTime(paused);
 }
 resumePlayback();
